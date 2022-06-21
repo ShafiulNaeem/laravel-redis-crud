@@ -16,7 +16,6 @@ class ToDoListController extends Controller
      */
     public function index()
     {
-
         $data = [];
 
         // set key prefix
@@ -26,25 +25,28 @@ class ToDoListController extends Controller
         $key_value = Redis::keys('todo:id:*');
 
         // get key wise data and stored in $data variable
-        foreach($key_value as $value){
+        foreach($key_value as $key=> $value){
 
             // get id from key
             $id = preg_replace('/[^0-9]/', '', $value);
 
             // get key wise data
-            $data[$id] = json_decode(Redis::get($key_prefix.$id),true);
+            $data[$key] = json_decode(Redis::get($key_prefix.$id),true);
+
         }
 
-        // array sort in id wise ascending order
-        ksort($data);
+        // sort data id wise DESC order
+        $sort_data = array_column($data, 'id');
+        array_multisort($sort_data, SORT_DESC, $data);
 
-        // array sort in id wise descending  order
-        $data = array_reverse($data, true);
+        // total element
+        $total = count($data);
 
         if (!empty($data)){
             $response['status'] = 'success';
             $response['message'] = 'Data found.';
             $response['response_data'] = $data;
+            $response['total'] = $total;
             return response()->json(['response' => $response], 200);
         }else{
             $response['status'] = 'error';
@@ -79,11 +81,9 @@ class ToDoListController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'status' => 'error',
-                'url' => '/',
-                'message' => $validator->errors()
-            ]);
+            $response['status'] = 'error';
+            $response['message'] =$validator->errors();
+            return response()->json(['response' => $response]);
         }
 
         $request_data = $request->all();
@@ -139,7 +139,7 @@ class ToDoListController extends Controller
             $response['status'] = 'success';
             $response['message'] = 'Data found.';
             $response['response_data'] = json_decode($data,true);
-            return response()->json(['response' => $response], 200);
+            return response()->json(['response' => $response], 201);
         }else{
             $response['status'] = 'error';
             $response['message'] = 'Something Went to Wrong!';
@@ -173,11 +173,9 @@ class ToDoListController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'status' => 'error',
-                'url' => '/',
-                'message' => $validator->errors()
-            ]);
+            $response['status'] = 'error';
+            $response['message'] =$validator->errors();
+            return response()->json(['response' => $response]);
         }
 
         //get data
