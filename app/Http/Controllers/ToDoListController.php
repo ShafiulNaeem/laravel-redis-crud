@@ -139,7 +139,7 @@ class ToDoListController extends Controller
             $response['status'] = 'success';
             $response['message'] = 'Data found.';
             $response['response_data'] = json_decode($data,true);
-            return response()->json(['response' => $response], 201);
+            return response()->json(['response' => $response], 200);
         }else{
             $response['status'] = 'error';
             $response['message'] = 'Something Went to Wrong!';
@@ -195,7 +195,6 @@ class ToDoListController extends Controller
 
             // insert new data in existed id
             Redis::set('todo:id:'.$id, $request_data);
-
             $response['status'] = 'success';
             $response['message'] = 'Data Updated Successfully!';
             return response()->json(['response' => $response], 200);
